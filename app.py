@@ -17,9 +17,6 @@ os.environ['TEMP'] = 1.05
 os.environ['TOPK'] = 12
 
 
-script_path=$(realpath $0)
-script_dir=$(dirname $script_path)
-
 
 os.environ['SAT_HOME'] = '/home/user/app/sharefs/cogview-new'
 
