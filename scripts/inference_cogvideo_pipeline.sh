@@ -15,7 +15,7 @@ script_path=$(realpath $0)
 script_dir=$(dirname $script_path)
 
 MASTER_PORT=${MASTER_PORT} SAT_HOME=/sharefs/cogview-new python cogvideo_pipeline.py \
-        --input-source interactive \
+        --input-source /home/user/app/CogVideo/prompt.txt \
         --output-path ./output \
         --parallel-size 1 \
         --both-stages \
@@ -33,6 +33,6 @@ MASTER_PORT=${MASTER_PORT} SAT_HOME=/sharefs/cogview-new python cogvideo_pipelin
         --sandwich-ln \
         --seed 1234 \
         --num-workers 0 \
-        --batch-size 4 \
-        --max-inference-batch-size 8 \
+        --batch-size 1 \
+        --max-inference-batch-size 1 \
         $@
