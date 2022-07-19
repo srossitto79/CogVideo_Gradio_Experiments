@@ -770,14 +770,14 @@ if __name__ == "__main__":
     # py_parser.add_argument("--interp-duration", type=float, default=-1) # -1是顺序生成，0是超分，0.5/1/2是插帧
     # py_parser.add_argument("--total-duration", type=float, default=4.0) # 整个的时间
     py_parser.add_argument('--use-guidance-stage1', action='store_true')
-    py_parser.add_argument('--use-guidance-stage2', action='store_true')
+    py_parser.add_argument('--use-guidance-stage2', action='store_false')
     py_parser.add_argument('--guidance-alpha', type=float, default=3.0)
     py_parser.add_argument('--stage-1', action='store_true') # stage 1: sequential generation
-    py_parser.add_argument('--stage-2', action='store_true') # stage 2: interp + dsr
-    py_parser.add_argument('--both-stages', action='store_true') # stage 1&2: sequential generation; interp + dsr
+    py_parser.add_argument('--stage-2', action='store_false') # stage 2: interp + dsr
+    py_parser.add_argument('--both-stages', action='store_false') # stage 1&2: sequential generation; interp + dsr
     py_parser.add_argument('--parallel-size', type=int, default=1)
-    py_parser.add_argument('--stage1-max-inference-batch-size', type=int, default=-1) # -1: use max-inference-batch-size
-    py_parser.add_argument('--multi-gpu', action='store_true')
+    py_parser.add_argument('--stage1-max-inference-batch-size', type=int, default=1) # -1: use max-inference-batch-size
+    py_parser.add_argument('--multi-gpu', action='store_false')
 
     CogVideoCacheModel.add_model_specific_args(py_parser)
 
