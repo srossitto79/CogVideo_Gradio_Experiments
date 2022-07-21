@@ -2,26 +2,20 @@
 
 from __future__ import annotations
 
-import argparse
-
 import gradio as gr
 
 from model import AppModel
 
 DESCRIPTION = '''# <a href="https://github.com/THUDM/CogVideo">CogVideo</a>
 
-The model takes only Chinese as input.
-If you check the "Translate to Chinese" checkbox, the app will use the English to Chinese translation results with [this Space](https://huggingface.co/spaces/chinhon/translation_eng2ch) as input.
-But the translation model may mistranslate and the results could be poor.
-So, it is also a good idea to input the translation results from other translation services.
+Currently, this Space only supports the first stage of the CogVideo pipeline due to hardware limitations.
+
+The model accepts only Chinese as input.
+By checking the "Translate to Chinese" checkbox, the results of English to Chinese translation with [this Space](https://huggingface.co/spaces/chinhon/translation_eng2ch) will be used as input.
+Since the translation model may mistranslate, you may want to use the translation results from other translation services.
 '''
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--only-first-stage', action='store_true')
-    parser.add_argument('--share', action='store_true')
-    return parser.parse_args()
+NOTES = 'This app is adapted from https://github.com/hysts/CogVideo_demo. It would be recommended to use the repo if you want to run the app yourself.'
+FOOTER = '<img id="visitor-badge" alt="visitor badge" src="https://visitor-badge.glitch.me/badge?page_id=THUDM.CogVideo" />'
 
 
 def set_example_text(example: list) -> dict:
@@ -29,8 +23,8 @@ def set_example_text(example: list) -> dict:
 
 
 def main():
-    args = parse_args()
-    model = AppModel(args.only_first_stage)
+    only_first_stage = True
+    model = AppModel(only_first_stage)
 
     with gr.Blocks(css='style.css') as demo:
         gr.Markdown(DESCRIPTION)
@@ -48,14 +42,12 @@ def main():
                                      label='Seed')
                     only_first_stage = gr.Checkbox(
                         label='Only First Stage',
-                        value=args.only_first_stage,
-                        visible=not args.only_first_stage)
+                        value=only_first_stage,
+                        visible=not only_first_stage)
                     run_button = gr.Button('Run')
 
                     with open('samples.txt') as f:
-                        samples = [
-                            line.strip().split('\t') for line in f.readlines()
-                        ]
+                        samples = [[line.strip()] for line in f.readlines()]
                     examples = gr.Dataset(components=[text], samples=samples)
 
             with gr.Column():
@@ -66,6 +58,9 @@ def main():
                             result_video = gr.Video(show_label=False)
                         with gr.TabItem('Output (Gallery)'):
                             result_gallery = gr.Gallery(show_label=False)
+
+        gr.Markdown(NOTES)
+        gr.Markdown(FOOTER)
 
         run_button.click(fn=model.run_with_translation,
                          inputs=[
@@ -83,10 +78,7 @@ def main():
                        inputs=examples,
                        outputs=examples.components)
 
-    demo.launch(
-        enable_queue=True,
-        share=args.share,
-    )
+    demo.launch(enable_queue=True, share=False)
 
 
 if __name__ == '__main__':

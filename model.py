@@ -1,15 +1,71 @@
-# This code is adapted from https://github.com/THUDM/CogView2/blob/4e55cce981eb94b9c8c1f19ba9f632fd3ee42ba8/cogview2_text2image.py
+# This code is adapted from https://github.com/THUDM/CogVideo/blob/ff423aa169978fb2f636f761e348631fa3178b03/cogvideo_pipeline.py
 
 from __future__ import annotations
 
 import argparse
-import functools
 import logging
+import os
 import pathlib
+import shutil
+import subprocess
 import sys
 import tempfile
 import time
+import zipfile
 from typing import Any
+
+if os.getenv('SYSTEM') == 'spaces':
+    subprocess.run('pip install icetk==0.0.4'.split())
+    subprocess.run('pip install SwissArmyTransformer==0.2.9'.split())
+    subprocess.run(
+        'pip install git+https://github.com/Sleepychord/Image-Local-Attention@43fee31'
+        .split())
+    #subprocess.run('git clone https://github.com/NVIDIA/apex'.split())
+    #subprocess.run('git checkout 1403c21'.split(), cwd='apex')
+    #with open('patch.apex') as f:
+    #    subprocess.run('patch -p1'.split(), cwd='apex', stdin=f)
+    #subprocess.run(
+    #    'pip install -v --disable-pip-version-check --no-cache-dir --global-option --cpp_ext --global-option --cuda_ext ./'
+    #    .split(),
+    #    cwd='apex')
+    #subprocess.run('rm -rf apex'.split())
+    with open('patch') as f:
+        subprocess.run('patch -p1'.split(), cwd='CogVideo', stdin=f)
+
+    from huggingface_hub import hf_hub_download
+
+    def download_and_extract_icetk_models() -> None:
+        icetk_model_dir = pathlib.Path('/home/user/.icetk_models')
+        icetk_model_dir.mkdir()
+        path = hf_hub_download('THUDM/icetk',
+                               'models.zip',
+                               use_auth_token=os.getenv('HF_TOKEN'))
+        with zipfile.ZipFile(path) as f:
+            f.extractall(path=icetk_model_dir.as_posix())
+
+    def download_and_extract_cogvideo_models(name: str) -> None:
+        path = hf_hub_download('THUDM/CogVideo',
+                               name,
+                               use_auth_token=os.getenv('HF_TOKEN'))
+        with zipfile.ZipFile(path) as f:
+            f.extractall('pretrained')
+        os.remove(path)
+
+    def download_and_extract_cogview2_models(name: str) -> None:
+        path = hf_hub_download('THUDM/CogView2', name)
+        with zipfile.ZipFile(path) as f:
+            f.extractall()
+        shutil.move('/home/user/app/sharefs/cogview-new/cogview2-dsr',
+                    'pretrained')
+        shutil.rmtree('/home/user/app/sharefs/')
+        os.remove(path)
+
+    download_and_extract_icetk_models()
+    download_and_extract_cogvideo_models('cogvideo-stage1.zip')
+    #download_and_extract_cogvideo_models('cogvideo-stage2.zip')
+    #download_and_extract_cogview2_models('cogview2-dsr.zip')
+
+    os.environ['SAT_HOME'] = '/home/user/app/pretrained'
 
 import gradio as gr
 import imageio.v2 as iio
@@ -1116,6 +1172,7 @@ class Model:
         start = time.perf_counter()
 
         set_random_seed(seed)
+        self.args.seed = seed
 
         if only_first_stage:
             self.args.stage_1 = True
@@ -1169,7 +1226,7 @@ class AppModel(Model):
 
     def run_with_translation(
         self, text: str, translate: bool, seed: int, only_first_stage: bool
-    ) -> tuple[str | None, np.ndarray | None, list[np.ndarray] | None]:
+    ) -> tuple[str | None, str | None, list[np.ndarray] | None]:
         logger.info(f'{text=}, {translate=}, {seed=}, {only_first_stage=}')
         if translate:
             text = translated_text = self.translator(text)
