@@ -14,7 +14,7 @@ The model accepts only Chinese as input.
 By checking the "Translate to Chinese" checkbox, the results of English to Chinese translation with [this Space](https://huggingface.co/spaces/chinhon/translation_eng2ch) will be used as input.
 Since the translation model may mistranslate, you may want to use the translation results from other translation services.
 '''
-NOTES = 'This app is adapted from https://github.com/hysts/CogVideo_demo. It would be recommended to use the repo if you want to run the app yourself.'
+NOTES = 'This app is adapted from <a href="https://github.com/hysts/CogVideo_demo">https://github.com/hysts/CogVideo_demo</a>. It would be recommended to use the repo if you want to run the app yourself.'
 FOOTER = '<img id="visitor-badge" alt="visitor badge" src="https://visitor-badge.glitch.me/badge?page_id=THUDM.CogVideo" />'
 
 
