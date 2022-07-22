@@ -60,7 +60,7 @@ def main():
         gr.Markdown(FOOTER)
         
         with open('samples.txt') as f:
-                        samples = [[line.strip()] for line in f.readlines()]
+            samples = [[line.strip()] for line in f.readlines()]
         
         examples = gr.Examples(examples=samples,
                                            fn=model.run_with_translation,
