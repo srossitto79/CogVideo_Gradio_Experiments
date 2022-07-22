@@ -44,13 +44,8 @@ def main():
                         visible=not only_first_stage)
                     run_button = gr.Button('Run')
 
-                    with open('samples.txt') as f:
-                        samples = [[line.strip()] for line in f.readlines()]
-                    examples = gr.Examples(examples=samples,
-                                           fn=model.run_with_translation,
-                                           inputs=[text,translate,seed,only_first_stage],
-                                           outputs=[translated_text,result_video,result_gallery],
-                                           cache_examples=True)
+                    
+                    
 
             with gr.Column():
                 with gr.Group():
@@ -63,6 +58,15 @@ def main():
 
         gr.Markdown(NOTES)
         gr.Markdown(FOOTER)
+        
+        with open('samples.txt') as f:
+                        samples = [[line.strip()] for line in f.readlines()]
+        
+        examples = gr.Examples(examples=samples,
+                                           fn=model.run_with_translation,
+                                           inputs=[text,translate,seed,only_first_stage],
+                                           outputs=[translated_text,result_video,result_gallery],
+                                           cache_examples=True)
 
         run_button.click(fn=model.run_with_translation,
                          inputs=[
