@@ -61,7 +61,7 @@ def main():
         
         
         examples = gr.Examples(examples=[["骑滑板的皮卡丘",True,1234,True],
-                                     ["a cat playing chess",True,1253,True]]
+                                     ["a cat playing chess",True,1253,True]],
                                            fn=model.run_with_translation,
                                            inputs=[text,translate,seed,only_first_stage],
                                            outputs=[translated_text,result_video,result_gallery],
