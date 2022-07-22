@@ -1234,4 +1234,4 @@ class AppModel(Model):
             translated_text = None
         frames = self.run(text, seed, only_first_stage)
         video_path = self.to_video(frames)
-        return translated_text, video_path, frames
+        return translated_text, video_path

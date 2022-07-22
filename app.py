@@ -53,8 +53,6 @@ def main():
                     with gr.Tabs():
                         with gr.TabItem('Output (Video)'):
                             result_video = gr.Video(show_label=False)
-                        with gr.TabItem('Output (Gallery)'):
-                            result_gallery = gr.Gallery(show_label=False)
 
         gr.Markdown(NOTES)
         gr.Markdown(FOOTER)
@@ -64,7 +62,7 @@ def main():
                                      ["a cat playing chess",True,1253,True]],
                                            fn=model.run_with_translation,
                                            inputs=[text,translate,seed,only_first_stage],
-                                           outputs=[translated_text,result_video,result_gallery],
+                                           outputs=[translated_text,result_video],
                                            cache_examples=True)
 
         run_button.click(fn=model.run_with_translation,
@@ -76,8 +74,7 @@ def main():
                          ],
                          outputs=[
                              translated_text,
-                             result_video,
-                             result_gallery,
+                             result_video
                          ])
 
     demo.launch()
