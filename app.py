@@ -18,8 +18,6 @@ NOTES = 'This app is adapted from <a href="https://github.com/hysts/CogVideo_dem
 FOOTER = '<img id="visitor-badge" alt="visitor badge" src="https://visitor-badge.glitch.me/badge?page_id=THUDM.CogVideo" />'
 
 
-def set_example_text(example: list) -> dict:
-    return gr.Textbox.update(value=example[0])
 
 
 def main():
@@ -48,7 +46,11 @@ def main():
 
                     with open('samples.txt') as f:
                         samples = [[line.strip()] for line in f.readlines()]
-                    examples = gr.Dataset(components=[text], samples=samples)
+                    examples = gr.Examples(examples=samples,
+                                           fn=model.run_with_translation,
+                                           inputs=[text,translate,seed,only_first_stage],
+                                           outputs=[translated_text,result_video,result_gallery],
+                                           cache_examples=True)
 
             with gr.Column():
                 with gr.Group():
@@ -74,12 +76,8 @@ def main():
                              result_video,
                              result_gallery,
                          ])
-        examples.click(fn=set_example_text,
-                       inputs=examples,
-                       outputs=examples.components,
-                       queue=False)
 
-    demo.launch(enable_queue=True, share=False)
+    demo.launch()
 
 
 if __name__ == '__main__':
