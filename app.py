@@ -60,7 +60,7 @@ def main():
         gr.Markdown(FOOTER)
         
         
-        examples = gr.Examples(examples=[["骑滑板的皮卡丘",True,1234,True],
+        examples = gr.Examples(examples=[["骑滑板的皮卡丘",False,1234,True],
                                      ["a cat playing chess",True,1253,True]],
                                            fn=model.run_with_translation,
                                            inputs=[text,translate,seed,only_first_stage],
