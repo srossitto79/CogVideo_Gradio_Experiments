@@ -76,7 +76,8 @@ def main():
                          ])
         examples.click(fn=set_example_text,
                        inputs=examples,
-                       outputs=examples.components)
+                       outputs=examples.components,
+                       queue=False)
 
     demo.launch(enable_queue=True, share=False)
 
