@@ -62,8 +62,8 @@ if os.getenv('SYSTEM') == 'spaces':
 
     download_and_extract_icetk_models()
     download_and_extract_cogvideo_models('cogvideo-stage1.zip')
-    #download_and_extract_cogvideo_models('cogvideo-stage2.zip')
-    #download_and_extract_cogview2_models('cogview2-dsr.zip')
+    download_and_extract_cogvideo_models('cogvideo-stage2.zip')
+    download_and_extract_cogview2_models('cogview2-dsr.zip')
 
     os.environ['SAT_HOME'] = '/home/user/app/pretrained'
 
@@ -677,7 +677,7 @@ def get_default_args() -> argparse.Namespace:
         '--batch-size',
         '1',
         '--max-inference-batch-size',
-        '8',
+        '1',
     ]
     args = get_args(args_list)
     args = argparse.Namespace(**vars(args), **vars(known))
@@ -779,7 +779,7 @@ class Model:
             path = auto_create('cogview2-dsr', path=None)
             dsr = DirectSuperResolution(self.args,
                                         path,
-                                        max_bz=12,
+                                        max_bz=4,
                                         onCUDA=False)
         else:
             dsr = None

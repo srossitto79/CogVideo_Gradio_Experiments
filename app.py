@@ -19,7 +19,7 @@ FOOTER = '<img id="visitor-badge" alt="visitor badge" src="https://visitor-badge
 
 
 def main():
-    only_first_stage = True
+    only_first_stage = False
     model = AppModel(only_first_stage)
 
     with gr.Blocks(css='style.css') as demo:
@@ -38,7 +38,7 @@ def main():
                                      label='Seed')
                     only_first_stage = gr.Checkbox(
                         label='Only First Stage',
-                        value=only_first_stage,
+                        value=True,
                         visible=not only_first_stage)
                     run_button = gr.Button('Run')
 
