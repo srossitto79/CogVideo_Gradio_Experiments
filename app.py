@@ -49,9 +49,6 @@ def main():
                         with gr.TabItem('Output (Video)'):
                             result_video = gr.Video(show_label=False)
 
-        gr.Markdown(NOTES)
-        gr.Markdown(FOOTER)
-
         examples = gr.Examples(
             examples=[['骑滑板的皮卡丘', False, 1234, True],
                       ['a cat playing chess', True, 1253, True]],
@@ -59,6 +56,9 @@ def main():
             inputs=[text, translate, seed, only_first_stage],
             outputs=[translated_text, result_video],
             cache_examples=True)
+
+        gr.Markdown(NOTES)
+        gr.Markdown(FOOTER)
 
         run_button.click(fn=model.run_with_translation,
                          inputs=[
