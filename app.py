@@ -18,8 +18,6 @@ NOTES = 'This app is adapted from <a href="https://github.com/hysts/CogVideo_dem
 FOOTER = '<img id="visitor-badge" alt="visitor badge" src="https://visitor-badge.glitch.me/badge?page_id=THUDM.CogVideo" />'
 
 
-
-
 def main():
     only_first_stage = True
     model = AppModel(only_first_stage)
@@ -44,9 +42,6 @@ def main():
                         visible=not only_first_stage)
                     run_button = gr.Button('Run')
 
-                    
-                    
-
             with gr.Column():
                 with gr.Group():
                     translated_text = gr.Textbox(label='Translated Text')
@@ -56,14 +51,14 @@ def main():
 
         gr.Markdown(NOTES)
         gr.Markdown(FOOTER)
-        
-        
-        examples = gr.Examples(examples=[["骑滑板的皮卡丘",False,1234,True],
-                                     ["a cat playing chess",True,1253,True]],
-                                           fn=model.run_with_translation,
-                                           inputs=[text,translate,seed,only_first_stage],
-                                           outputs=[translated_text,result_video],
-                                           cache_examples=True)
+
+        examples = gr.Examples(
+            examples=[['骑滑板的皮卡丘', False, 1234, True],
+                      ['a cat playing chess', True, 1253, True]],
+            fn=model.run_with_translation,
+            inputs=[text, translate, seed, only_first_stage],
+            outputs=[translated_text, result_video],
+            cache_examples=True)
 
         run_button.click(fn=model.run_with_translation,
                          inputs=[
@@ -72,10 +67,7 @@ def main():
                              seed,
                              only_first_stage,
                          ],
-                         outputs=[
-                             translated_text,
-                             result_video
-                         ])
+                         outputs=[translated_text, result_video])
 
     demo.launch()
 
