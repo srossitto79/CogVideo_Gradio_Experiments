@@ -40,6 +40,9 @@ def main():
                         label='Only First Stage',
                         value=only_first_stage,
                         visible=not only_first_stage)
+                    image_prompt = gr.Image(type="filepath"
+                                            label="Image Prompt",
+                                            value=None)
                     run_button = gr.Button('Run')
 
             with gr.Column():
@@ -50,10 +53,10 @@ def main():
                             result_video = gr.Video(show_label=False)
 
         examples = gr.Examples(
-            examples=[['骑滑板的皮卡丘', False, 1234, True],
-                      ['a cat playing chess', True, 1253, True]],
+            examples=[['骑滑板的皮卡丘', False, 1234, True,None],
+                      ['a cat playing chess', True, 1253, True,None]],
             fn=model.run_with_translation,
-            inputs=[text, translate, seed, only_first_stage],
+            inputs=[text, translate, seed, only_first_stage,image_prompt],
             outputs=[translated_text, result_video],
             cache_examples=True)
 
@@ -66,6 +69,7 @@ def main():
                              translate,
                              seed,
                              only_first_stage,
+                             image_prompt
                          ],
                          outputs=[translated_text, result_video])
 

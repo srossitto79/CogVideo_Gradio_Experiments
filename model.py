@@ -796,7 +796,8 @@ class Model:
                        video_raw_text=None,
                        video_guidance_text='视频',
                        image_text_suffix='',
-                       batch_size=1):
+                       batch_size=1,
+                       image_prompt):
         process_start_time = time.perf_counter()
 
         generate_frame_num = self.args.generate_frame_num
@@ -828,33 +829,36 @@ class Model:
 
         seq_1st = torch.tensor(seq_1st, dtype=torch.long,
                                device=self.device).unsqueeze(0)
-        output_list_1st = []
-        for tim in range(max(batch_size // mbz, 1)):
-            start_time = time.perf_counter()
-            output_list_1st.append(
-                my_filling_sequence(
-                    model,
-                    tokenizer,
-                    self.args,
-                    seq_1st.clone(),
-                    batch_size=min(batch_size, mbz),
-                    get_masks_and_position_ids=
-                    get_masks_and_position_ids_stage1,
-                    text_len=text_len_1st,
-                    frame_len=frame_len,
-                    strategy=self.strategy_cogview2,
-                    strategy2=self.strategy_cogvideo,
-                    log_text_attention_weights=1.4,
-                    enforce_no_swin=True,
-                    mode_stage1=True,
-                )[0])
-            elapsed = time.perf_counter() - start_time
-            logger.info(f'[First Frame] Elapsed: {elapsed:.2f}')
-        output_tokens_1st = torch.cat(output_list_1st, dim=0)
-        given_tokens = output_tokens_1st[:, text_len_1st + 1:text_len_1st +
-                                         401].unsqueeze(
-                                             1
-                                         )  # given_tokens.shape: [bs, frame_num, 400]
+        if self.image_prompt is None:
+            output_list_1st = []
+            for tim in range(max(batch_size // mbz, 1)):
+                start_time = time.perf_counter()
+                output_list_1st.append(
+                    my_filling_sequence(
+                        model,
+                        tokenizer,
+                        self.args,
+                        seq_1st.clone(),
+                        batch_size=min(batch_size, mbz),
+                        get_masks_and_position_ids=
+                        get_masks_and_position_ids_stage1,
+                        text_len=text_len_1st,
+                        frame_len=frame_len,
+                        strategy=self.strategy_cogview2,
+                        strategy2=self.strategy_cogvideo,
+                        log_text_attention_weights=1.4,
+                        enforce_no_swin=True,
+                        mode_stage1=True,
+                    )[0])
+                elapsed = time.perf_counter() - start_time
+                logger.info(f'[First Frame] Elapsed: {elapsed:.2f}')
+            output_tokens_1st = torch.cat(output_list_1st, dim=0)
+            given_tokens = output_tokens_1st[:, text_len_1st + 1:text_len_1st +
+                                            401].unsqueeze(
+                                                1
+                                            )  # given_tokens.shape: [bs, frame_num, 400]
+        else:
+            given_tokens = tokenizer.encode(image_path=self.image_prompt, image_size=160).repeat(batch_size, 1).unsqueeze(1)
 
         # generate subsequent frames:
         total_frames = generate_frame_num
@@ -1167,7 +1171,7 @@ class Model:
             1, 2, 0).to(torch.uint8).numpy()
 
     def run(self, text: str, seed: int,
-            only_first_stage: bool) -> list[np.ndarray]:
+            only_first_stage: bool,image_prompt: None) -> list[np.ndarray]:
         logger.info('==================== run ====================')
         start = time.perf_counter()
 
@@ -1188,7 +1192,8 @@ class Model:
             video_raw_text=text,
             video_guidance_text='视频',
             image_text_suffix=' 高清摄影',
-            batch_size=self.args.batch_size)
+            batch_size=self.args.batch_size
+            image_prompt=image_prompt)
         if not only_first_stage:
             _, res = self.process_stage2(
                 self.model_stage2,
@@ -1226,12 +1231,13 @@ class AppModel(Model):
 
     def run_with_translation(
             self, text: str, translate: bool, seed: int,
-            only_first_stage: bool) -> tuple[str | None, str | None]:
-        logger.info(f'{text=}, {translate=}, {seed=}, {only_first_stage=}')
+            only_first_stage: bool,image_prompt: None) -> tuple[str | None, str | None],
+            
+        logger.info(f'{text=}, {translate=}, {seed=}, {only_first_stage=},{image_prompt=}')
         if translate:
             text = translated_text = self.translator(text)
         else:
             translated_text = None
-        frames = self.run(text, seed, only_first_stage)
+        frames = self.run(text, seed, only_first_stage,image_prompt)
         video_path = self.to_video(frames)
         return translated_text, video_path
