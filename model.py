@@ -797,7 +797,7 @@ class Model:
                        video_guidance_text='视频',
                        image_text_suffix='',
                        batch_size=1,
-                       image_prompt):
+                       image_prompt=None):
         process_start_time = time.perf_counter()
 
         generate_frame_num = self.args.generate_frame_num
