@@ -858,7 +858,7 @@ class Model:
                                                 1
                                             )  # given_tokens.shape: [bs, frame_num, 400]
         else:
-            given_tokens = tokenizer.encode(image_path=self.image_prompt, image_size=160).repeat(batch_size, 1).unsqueeze(1)
+            given_tokens = tokenizer.encode(image_path=image_prompt, image_size=160).repeat(batch_size, 1).unsqueeze(1)
 
         # generate subsequent frames:
         total_frames = generate_frame_num
