@@ -1171,7 +1171,7 @@ class Model:
             1, 2, 0).to(torch.uint8).numpy()
 
     def run(self, text: str, seed: int,
-            only_first_stage: bool,image_prompt: str=None) -> list[np.ndarray]:
+            only_first_stage: bool,image_prompt: None) -> list[np.ndarray]:
         logger.info('==================== run ====================')
         start = time.perf_counter()
 
@@ -1231,7 +1231,7 @@ class AppModel(Model):
 
     def run_with_translation(
             self, text: str, translate: bool, seed: int,
-            only_first_stage: bool,image_prompt: str=None) -> tuple[str | None, str | None],
+            only_first_stage: bool,image_prompt: None) -> tuple[str | None, str | None]:
             
         logger.info(f'{text=}, {translate=}, {seed=}, {only_first_stage=},{image_prompt=}')
         if translate:
