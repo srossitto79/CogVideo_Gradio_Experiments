@@ -829,7 +829,7 @@ class Model:
 
         seq_1st = torch.tensor(seq_1st, dtype=torch.long,
                                device=self.device).unsqueeze(0)
-        if self.image_prompt is None:
+        if image_prompt is None:
             output_list_1st = []
             for tim in range(max(batch_size // mbz, 1)):
                 start_time = time.perf_counter()
