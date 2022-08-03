@@ -1192,7 +1192,7 @@ class Model:
             video_raw_text=text,
             video_guidance_text='视频',
             image_text_suffix=' 高清摄影',
-            batch_size=self.args.batch_size
+            batch_size=self.args.batch_size,
             image_prompt=image_prompt)
         if not only_first_stage:
             _, res = self.process_stage2(
