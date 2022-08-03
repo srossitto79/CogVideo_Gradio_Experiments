@@ -40,7 +40,7 @@ def main():
                         label='Only First Stage',
                         value=only_first_stage,
                         visible=not only_first_stage)
-                    image_prompt = gr.Image(type="filepath"
+                    image_prompt = gr.Image(type="filepath",
                                             label="Image Prompt",
                                             value=None)
                     run_button = gr.Button('Run')
