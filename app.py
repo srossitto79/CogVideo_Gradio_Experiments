@@ -62,7 +62,7 @@ def main():
 
         gr.Markdown(NOTES)
         gr.Markdown(FOOTER)
-
+        print(gr.__version__)
         run_button.click(fn=model.run_with_translation,
                          inputs=[
                              text,
@@ -72,7 +72,7 @@ def main():
                              image_prompt
                          ],
                          outputs=[translated_text, result_video])
-
+        print(gr.__version__)
     demo.launch()
 
 
