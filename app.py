@@ -6,7 +6,7 @@ import gradio as gr
 
 # from model import AppModel
 
-MAINTENANCE_NOTICE='This space is under maintenance'
+MAINTENANCE_NOTICE='Sorry, this space is under maintenance, and will be restored soon. '
 
 DESCRIPTION = '''# <a href="https://github.com/THUDM/CogVideo">CogVideo</a>
 
