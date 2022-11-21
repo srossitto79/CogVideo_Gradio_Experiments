@@ -4,7 +4,9 @@ from __future__ import annotations
 
 import gradio as gr
 
-from model import AppModel
+# from model import AppModel
+
+MAINTENANCE_NOTICE='This space is under maintenance'
 
 DESCRIPTION = '''# <a href="https://github.com/THUDM/CogVideo">CogVideo</a>
 
@@ -20,9 +22,11 @@ FOOTER = '<img id="visitor-badge" alt="visitor badge" src="https://visitor-badge
 
 def main():
     only_first_stage = True
-    model = AppModel(only_first_stage)
+    # model = AppModel(only_first_stage)
 
     with gr.Blocks(css='style.css') as demo:
+        gr.Markdown(MAINTENANCE_NOTICE)
+        '''
         gr.Markdown(DESCRIPTION)
 
         with gr.Row():
@@ -73,6 +77,7 @@ def main():
                          ],
                          outputs=[translated_text, result_video])
         print(gr.__version__)
+        '''
     demo.launch()
 
 
