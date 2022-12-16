@@ -19,14 +19,41 @@ Since the translation model may mistranslate, you may want to use the translatio
 NOTES = 'This app is adapted from <a href="https://github.com/hysts/CogVideo_demo">https://github.com/hysts/CogVideo_demo</a>. It would be recommended to use the repo if you want to run the app yourself.'
 FOOTER = '<img id="visitor-badge" alt="visitor badge" src="https://visitor-badge.glitch.me/badge?page_id=THUDM.CogVideo" />'
 
+import json
+import requests
+
+def post(
+        text,
+        translate,
+        seed,
+        only_first_stage,
+        image_prompt
+        ):
+    url = 'https://ccb8is4fqtofrtdsfjebg.ml-platform-cn-beijing.volces.com/devinstance/di-20221130120908-bhpxq/proxy/6201/cogvideo-s1'
+    headers = {
+            "Content-Type": "application/json; charset=UTF-8",
+            "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36",
+        }
+
+    data = json.dumps({'text': text,
+                    'translate': translate,
+                    'seed': seed,
+                    'only_first_stage': only_first_stage,
+                    'image_prompt': image_prompt
+                    })
+    r = requests.post(url, data, headers=headers)
+
+    translated_text = r.json()['data']['translated_text']
+    result_video = r.json()['data']['result_video']
+    return translated_text, result_video
 
 def main():
     only_first_stage = True
     # model = AppModel(only_first_stage)
 
     with gr.Blocks(css='style.css') as demo:
-        gr.Markdown(MAINTENANCE_NOTICE)
-        '''
+        # gr.Markdown(MAINTENANCE_NOTICE)
+        
         gr.Markdown(DESCRIPTION)
 
         with gr.Row():
@@ -56,18 +83,18 @@ def main():
                         with gr.TabItem('Output (Video)'):
                             result_video = gr.Video(show_label=False)
 
-        examples = gr.Examples(
-            examples=[['骑滑板的皮卡丘', False, 1234, True,None],
-                      ['a cat playing chess', True, 1253, True,None]],
-            fn=model.run_with_translation,
-            inputs=[text, translate, seed, only_first_stage,image_prompt],
-            outputs=[translated_text, result_video],
-            cache_examples=True)
+        # examples = gr.Examples(
+        #     examples=[['骑滑板的皮卡丘', False, 1234, True,None],
+        #               ['a cat playing chess', True, 1253, True,None]],
+        #     fn=model.run_with_translation,
+        #     inputs=[text, translate, seed, only_first_stage,image_prompt],
+        #     outputs=[translated_text, result_video],
+        #     cache_examples=True)
 
         gr.Markdown(NOTES)
         gr.Markdown(FOOTER)
         print(gr.__version__)
-        run_button.click(fn=model.run_with_translation,
+        run_button.click(fn=post,
                          inputs=[
                              text,
                              translate,
@@ -77,7 +104,7 @@ def main():
                          ],
                          outputs=[translated_text, result_video])
         print(gr.__version__)
-        '''
+        
     demo.launch()
 
 
