@@ -48,7 +48,7 @@ def post(
     result_video = r.json()['data']['result_video']
     frames = r.json()['data']['frames']
     print(result_video)
-    print(frames)
+    print(len(frames))
     print('-----------------')
     writer = iio.get_writer(result_video, fps=4)
     for frame in frames:
