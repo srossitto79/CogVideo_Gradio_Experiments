@@ -49,7 +49,7 @@ def post(
     print(result_video)
     print(frames)
     print('-----------------')
-    writer = iio.get_writer(result_video, fps=fps)
+    writer = iio.get_writer(result_video, fps=4)
     for frame in frames:
         writer.append_data(frame)
     writer.close()
