@@ -22,6 +22,7 @@ FOOTER = '<img id="visitor-badge" alt="visitor badge" src="https://visitor-badge
 import json
 import requests
 import numpy as np
+import imageio.v2 as iio
 
 def post(
         text,
