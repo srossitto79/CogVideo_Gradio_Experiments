@@ -45,6 +45,7 @@ def post(
 
     translated_text = r.json()['data']['translated_text']
     result_video = r.json()['data']['result_video']
+    print(result_video)
     return translated_text, result_video
 
 def main():
