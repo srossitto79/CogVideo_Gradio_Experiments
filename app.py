@@ -21,6 +21,7 @@ FOOTER = '<img id="visitor-badge" alt="visitor badge" src="https://visitor-badge
 
 import json
 import requests
+import numpy as np
 
 def post(
         text,
@@ -51,7 +52,7 @@ def post(
     print('-----------------')
     writer = iio.get_writer(result_video, fps=4)
     for frame in frames:
-        writer.append_data(frame)
+        writer.append_data(np.array(frame))
     writer.close()
     return translated_text, result_video
 
