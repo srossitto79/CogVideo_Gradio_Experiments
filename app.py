@@ -45,9 +45,14 @@ def post(
 
     translated_text = r.json()['data']['translated_text']
     result_video = r.json()['data']['result_video']
+    frames = r.json()['data']['frames']
     print(result_video)
-    print(type(result_video))
+    print(frames)
     print('-----------------')
+    writer = iio.get_writer(result_video, fps=fps)
+    for frame in frames:
+        writer.append_data(frame)
+    writer.close()
     return translated_text, result_video
 
 def main():
