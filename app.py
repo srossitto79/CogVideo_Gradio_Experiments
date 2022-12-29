@@ -31,7 +31,7 @@ def post(
         only_first_stage,
         image_prompt
         ):
-    url = 'https://ccb8is4fqtofrtdsfjebg.ml-platform-cn-beijing.volces.com/devinstance/di-20221130120908-bhpxq/proxy/6201/cogvideo-s1'
+    url = 'https://ccb8is4fqtofrtdsfjebg.ml-platform-cn-beijing.volces.com/devinstance/di-20221130120908-bhpxq/proxy/6201'
     headers = {
             "Content-Type": "application/json; charset=UTF-8",
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36",
