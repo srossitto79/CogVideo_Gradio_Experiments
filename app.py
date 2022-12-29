@@ -44,11 +44,10 @@ def post(
                     'image_prompt': image_prompt
                     })
     r = requests.post(url, data, headers=headers)
-
+    print(r.json())
     translated_text = r.json()['data']['translated_text']
     result_video = r.json()['data']['result_video']
     frames = r.json()['data']['frames']
-    print(result_video)
     print(len(frames))
     print('-----------------')
     writer = iio.get_writer(result_video, fps=4)
