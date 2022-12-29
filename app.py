@@ -55,7 +55,7 @@ def post(
         writer.append_data(np.array(frame))
     writer.close()
     print('finish')
-    return translated_text, result_video
+    return translated_text, result_video, result_video, result_video, result_video
 
 def main():
     only_first_stage = True
