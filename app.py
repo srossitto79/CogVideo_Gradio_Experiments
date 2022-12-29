@@ -90,8 +90,14 @@ def main():
                 with gr.Group():
                     translated_text = gr.Textbox(label='Translated Text')
                     with gr.Tabs():
-                        with gr.TabItem('Output (Video)'):
-                            result_video = gr.Video(show_label=False)
+                        with gr.TabItem('Output1 (Video)'):
+                            result_video1 = gr.Video(show_label=False)
+                        with gr.TabItem('Output2 (Video)'):
+                            result_video2 = gr.Video(show_label=False)
+                        with gr.TabItem('Output3 (Video)'):
+                            result_video3 = gr.Video(show_label=False)
+                        with gr.TabItem('Output4 (Video)'):
+                            result_video4 = gr.Video(show_label=False)
 
         # examples = gr.Examples(
         #     examples=[['骑滑板的皮卡丘', False, 1234, True,None],
@@ -112,7 +118,8 @@ def main():
                              only_first_stage,
                              image_prompt
                          ],
-                         outputs=[translated_text, result_video])
+                         outputs=[translated_text, result_video1, result_video2,
+                         result_video3, result_video4])
         print(gr.__version__)
         
     demo.launch()
