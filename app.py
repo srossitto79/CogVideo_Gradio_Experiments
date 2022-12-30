@@ -54,7 +54,7 @@ def post(
             writer.append_data(np.array(frame))
         writer.close()
     print('finish')
-    return translated_text, result_video[0], result_video[1], result_video[2], result_video[3]
+    return result_video[0], result_video[1], result_video[2], result_video[3]
 
 def main():
     only_first_stage = True
@@ -119,7 +119,7 @@ def main():
                              only_first_stage,
                              image_prompt
                          ],
-                         outputs=[translated_text, result_video1, result_video2, result_video3, result_video4])
+                         outputs=[result_video1, result_video2, result_video3, result_video4])
         print(gr.__version__)
         
     demo.launch()
