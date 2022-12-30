@@ -89,13 +89,10 @@ def main():
                 with gr.Group():
                     #translated_text = gr.Textbox(label='Translated Text')
                     with gr.Tabs():
-                        with gr.TabItem('Output1 (Video)'):
+                        with gr.TabItem('Output (Video)'):
                             result_video1 = gr.Video(show_label=False)
-                        with gr.TabItem('Output2 (Video)'):
                             result_video2 = gr.Video(show_label=False)
-                        with gr.TabItem('Output3 (Video)'):
                             result_video3 = gr.Video(show_label=False)
-                        with gr.TabItem('Output4 (Video)'):
                             result_video4 = gr.Video(show_label=False)
 
 
