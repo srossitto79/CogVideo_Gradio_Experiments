@@ -44,18 +44,17 @@ def post(
                     'image_prompt': image_prompt
                     })
     r = requests.post(url, data, headers=headers)
-    print(r.json())
+
     translated_text = r.json()['data']['translated_text']
     result_video = r.json()['data']['result_video']
     frames = r.json()['data']['frames']
-    print(len(frames))
-    print('-----------------')
-    writer = iio.get_writer(result_video, fps=4)
-    for frame in frames:
-        writer.append_data(np.array(frame))
-    writer.close()
+    for i in range(4):
+        writer = iio.get_writer(result_video[i], fps=4)
+        for frame in frames[i]:
+            writer.append_data(np.array(frame))
+        writer.close()
     print('finish')
-    return translated_text, result_video, result_video, result_video, result_video
+    return translated_text, result_video
 
 def main():
     only_first_stage = True
@@ -91,13 +90,13 @@ def main():
                     translated_text = gr.Textbox(label='Translated Text')
                     with gr.Tabs():
                         with gr.TabItem('Output1 (Video)'):
-                            result_video1 = gr.Video(show_label=False)
+                            result_video[0] = gr.Video(show_label=False)
                         with gr.TabItem('Output2 (Video)'):
-                            result_video2 = gr.Video(show_label=False)
+                            result_video[1] = gr.Video(show_label=False)
                         with gr.TabItem('Output3 (Video)'):
-                            result_video3 = gr.Video(show_label=False)
+                            result_video[2] = gr.Video(show_label=False)
                         with gr.TabItem('Output4 (Video)'):
-                            result_video4 = gr.Video(show_label=False)
+                            result_video[3] = gr.Video(show_label=False)
 
         # examples = gr.Examples(
         #     examples=[['骑滑板的皮卡丘', False, 1234, True,None],
@@ -118,8 +117,7 @@ def main():
                              only_first_stage,
                              image_prompt
                          ],
-                         outputs=[translated_text, result_video1, result_video2,
-                         result_video3, result_video4])
+                         outputs=[translated_text, result_video])
         print(gr.__version__)
         
     demo.launch()
