@@ -40,6 +40,7 @@ def post(
             encoded_img = str(base64.b64encode(image_file.read()), encoding='utf-8')
     else:
         encoded_img = None
+    print('开始请求...')
     data = json.dumps({'text': text,
                     'translate': translate,
                     'seed': seed,
@@ -47,7 +48,7 @@ def post(
                     'image_prompt': encoded_img
                     })
     r = requests.post(url, data, headers=headers)
-
+    print('请求完毕...')
     translated_text = r.json()['data']['translated_text']
     result_video = r.json()['data']['result_video']
     frames = r.json()['data']['frames']
@@ -58,7 +59,7 @@ def post(
         for frame in frames[i]:
             writer.append_data(np.array(frame))
         writer.close()
-    print('finish')
+    print('finished')
     return result_video[0], result_video[1]
     # return result_video[0], result_video[1], result_video[2], result_video[3]
 
