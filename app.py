@@ -48,7 +48,7 @@ def post(
                     'image_prompt': encoded_img
                     })
     r = requests.post(url, data, headers=headers)
-    print(r)
+    print(r.json())
     print('请求完毕...')
     translated_text = r.json()['data']['translated_text']
     result_video = r.json()['data']['result_video']
