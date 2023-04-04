@@ -9,9 +9,7 @@ import gradio as gr
 MAINTENANCE_NOTICE='Sorry, due to computing resources issues, this space is under maintenance, and will be restored as soon as possible. '
 
 DESCRIPTION = '''# <a href="https://github.com/THUDM/CogVideo">CogVideo</a>
-
 Currently, this Space only supports the first stage of the CogVideo pipeline due to hardware limitations.
-
 The model accepts only Chinese as input.
 By checking the "Translate to Chinese" checkbox, the results of English to Chinese translation with [this Space](https://huggingface.co/spaces/chinhon/translation_eng2ch) will be used as input.
 Since the translation model may mistranslate, you may want to use the translation results from other translation services.
@@ -23,6 +21,7 @@ import json
 import requests
 import numpy as np
 import imageio.v2 as iio
+import base64
 
 def post(
         text,
@@ -31,30 +30,32 @@ def post(
         only_first_stage,
         image_prompt
         ):
-    url = 'https://ccb8is4fqtofrtdsfjebg.ml-platform-cn-beijing.volces.com/devinstance/di-20221130120908-bhpxq/proxy/6201'
+    url = 'https://tianqi.aminer.cn/cogvideo/api/generate'
     headers = {
             "Content-Type": "application/json; charset=UTF-8",
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36",
         }
-
+    with open(image_prompt, "rb") as image_file:
+        encoded_img = base64.b64encode(image_file.read())
     data = json.dumps({'text': text,
                     'translate': translate,
                     'seed': seed,
                     'only_first_stage': only_first_stage,
-                    'image_prompt': image_prompt
+                    'image_prompt': encoded_img
                     })
     r = requests.post(url, data, headers=headers)
 
     translated_text = r.json()['data']['translated_text']
     result_video = r.json()['data']['result_video']
     frames = r.json()['data']['frames']
-    for i in range(4):
+    for i in range(2):
         writer = iio.get_writer(result_video[i], fps=4)
         for frame in frames[i]:
             writer.append_data(np.array(frame))
         writer.close()
     print('finish')
-    return result_video[0], result_video[1], result_video[2], result_video[3]
+    return result_video[0], result_video[1]
+    # return result_video[0], result_video[1], result_video[2], result_video[3]
 
 def main():
     only_first_stage = True
@@ -92,8 +93,8 @@ def main():
                         with gr.TabItem('Output (Video)'):
                             result_video1 = gr.Video(show_label=False)
                             result_video2 = gr.Video(show_label=False)
-                            result_video3 = gr.Video(show_label=False)
-                            result_video4 = gr.Video(show_label=False)
+                            # result_video3 = gr.Video(show_label=False)
+                            # result_video4 = gr.Video(show_label=False)
 
 
 
