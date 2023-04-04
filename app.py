@@ -117,7 +117,7 @@ def main():
                              only_first_stage,
                              image_prompt
                          ],
-                         outputs=[result_video1, result_video2]
+                         outputs=[result_video1, result_video2])
                          # outputs=[result_video1, result_video2, result_video3, result_video4])
         print(gr.__version__)
         
