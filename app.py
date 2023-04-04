@@ -35,13 +35,16 @@ def post(
             "Content-Type": "application/json; charset=UTF-8",
             "User-Agent": "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.87 Safari/537.36",
         }
-    with open(image_prompt, "rb") as image_file:
-        encoded_img = base64.b64encode(image_file.read())
+    if image_prompt:
+        with open(image_prompt, "rb") as image_file:
+            encoded_img = str(base64.b64encode(image_file.read()), encoding='utf-8')
+    else:
+        encoded_img = None
     data = json.dumps({'text': text,
                     'translate': translate,
                     'seed': seed,
                     'only_first_stage': only_first_stage,
-                    'image_prompt': str(encoded_img, encoding='utf-8')
+                    'image_prompt': encoded_img
                     })
     r = requests.post(url, data, headers=headers)
 
