@@ -41,14 +41,16 @@ def post(
                     'translate': translate,
                     'seed': seed,
                     'only_first_stage': only_first_stage,
-                    'image_prompt': encoded_img
+                    'image_prompt': str(encoded_img, encoding='utf-8')
                     })
     r = requests.post(url, data, headers=headers)
 
     translated_text = r.json()['data']['translated_text']
     result_video = r.json()['data']['result_video']
     frames = r.json()['data']['frames']
-    for i in range(2):
+
+    num_videos = 2
+    for i in range(num_videos):
         writer = iio.get_writer(result_video[i], fps=4)
         for frame in frames[i]:
             writer.append_data(np.array(frame))
