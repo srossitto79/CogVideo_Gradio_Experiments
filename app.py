@@ -55,6 +55,7 @@ def post(
     # frames = r.json()['data']['frames']
 
     # urllib.request.urlretrieve(url, filename)
+    result_video = ["", ""]
     num_videos = 2
     url = "http://cogview.cn-wlcb.ufileos.com/tmpr4kcld7k0.mp4"
     result_video[0] = "./temp1.mp4"
