@@ -49,8 +49,9 @@ def post(
                     'image_prompt': encoded_img
                     })
     r = requests.post(url, data, headers=headers)
+    print(r)
     print('请求完毕...')
-    translated_text = r.json()['data']['translated_text']
+    # translated_text = r.json()['data']['translated_text']
     frames = r.json()['data']['frames']
 
     result_video = ["" for i in range(len(frames))]
