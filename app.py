@@ -42,31 +42,25 @@ def post(
     else:
         encoded_img = None
     print('开始请求...')
-    # data = json.dumps({'text': text,
-    #                 'translate': translate,
-    #                 'seed': seed,
-    #                 'only_first_stage': only_first_stage,
-    #                 'image_prompt': encoded_img
-    #                 })
-    # r = requests.post(url, data, headers=headers)
-    # print('请求完毕...')
-    # translated_text = r.json()['data']['translated_text']
-    # result_video = r.json()['data']['result_video']
-    # frames = r.json()['data']['frames']
+    data = json.dumps({'text': text,
+                    'translate': translate,
+                    'seed': seed,
+                    'only_first_stage': only_first_stage,
+                    'image_prompt': encoded_img
+                    })
+    r = requests.post(url, data, headers=headers)
+    print('请求完毕...')
+    translated_text = r.json()['data']['translated_text']
+    frames = r.json()['data']['frames']
 
-    # urllib.request.urlretrieve(url, filename)
-    result_video = ["", ""]
-    num_videos = 2
-    url = "http://cogview.cn-wlcb.ufileos.com/tmpr4kcld7k0.mp4"
+    result_video = ["" for i in range(len(frames))]
     result_video[0] = "./temp1.mp4"
     result_video[1] = "./temp2.mp4"
-    urllib.request.urlretrieve(url, result_video[0])
-    urllib.request.urlretrieve(url, result_video[1])
-    # for i in range(num_videos):
-    #     writer = iio.get_writer(result_video[i], fps=4)
-    #     for frame in frames[i]:
-    #         writer.append_data(np.array(frame))
-    #     writer.close()
+    for i in range(len(result_video)):
+        url = frames[i]
+        result_video[i] = "./temp" + str(i) + ".mp4"
+        urllib.request.urlretrieve(url, result_video[i])
+
     print('finished')
     return result_video[0], result_video[1]
     # return result_video[0], result_video[1], result_video[2], result_video[3]
