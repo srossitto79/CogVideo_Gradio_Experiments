@@ -130,7 +130,7 @@ def main():
                          outputs=[result_video1, result_video2])
                          # outputs=[result_video1, result_video2, result_video3, result_video4])
         print(gr.__version__)
-        
+    demo.queue(concurrency_count=6)
     demo.launch()
 
 
