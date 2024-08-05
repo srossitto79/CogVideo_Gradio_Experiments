@@ -1,8 +1,9 @@
 gradio==4.40.0
 imageio-ffmpeg==0.5.1
 torch==2.2.0
-git+https://github.com/huggingface/diffusers.git@9c6b8894ff3f2a1aa000e2e1faf3291aa7a4f3e5#egg=diffusers
+git+https://github.com/huggingface/diffusers.git@32da2e7673cfe0475a47c41b859f5fbd8bf17a40#egg=diffusers
 transformers==4.43.3
 spaces==0.29.2
 moviepy==1.0.3
 openai==1.38.0
+accelerate==0.33.0

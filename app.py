@@ -1,15 +1,19 @@
 import os
+import tempfile
 import threading
 import time
 
 import gradio as gr
+import numpy as np
 import torch
 from diffusers import CogVideoXPipeline
-from diffusers.utils import export_to_video
 from datetime import datetime, timedelta
 from openai import OpenAI
 import spaces
+import imageio
 import moviepy.editor as mp
+from typing import List, Union
+import PIL
 
 dtype = torch.float16
 device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -27,6 +31,25 @@ Other times the user will not want modifications , but instead want a new image 
 
 Video descriptions must have the same num of words as examples below. Extra words will be ignored.
 """
+
+
+def export_to_video_imageio(
+        video_frames: Union[List[np.ndarray], List[PIL.Image.Image]], output_video_path: str = None, fps: int = 8
+) -> str:
+    """
+    Export the video frames to a video file using imageio lib to Avoid "green screen" issue (for example CogVideoX)
+    """
+    if output_video_path is None:
+        output_video_path = tempfile.NamedTemporaryFile(suffix=".mp4").name
+
+    if isinstance(video_frames[0], PIL.Image.Image):
+        video_frames = [np.array(frame) for frame in video_frames]
+
+    with imageio.get_writer(output_video_path, fps=fps) as writer:
+        for frame in video_frames:
+            writer.append_data(frame)
+
+    return output_video_path
 
 
 def convert_prompt(prompt: str, retry_times: int = 3) -> str:
@@ -94,8 +117,9 @@ def infer(
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     video_path = f"./output/{timestamp}.mp4"
     os.makedirs(os.path.dirname(video_path), exist_ok=True)
-    export_to_video(video, video_path)
+    export_to_video_imageio(video[1:], video_path)
     return video_path
+
 
 def convert_to_gif(video_path):
     clip = mp.VideoFileClip(video_path)
@@ -104,6 +128,7 @@ def convert_to_gif(video_path):
     gif_path = video_path.replace('.mp4', '.gif')
     clip.write_gif(gif_path, fps=8)
     return gif_path
+
 
 def delete_old_files():
     while True:
@@ -117,6 +142,7 @@ def delete_old_files():
                 if file_mtime < cutoff:
                     os.remove(file_path)
         time.sleep(600)  # Sleep for 10 minutes
+
 
 threading.Thread(target=delete_old_files, daemon=True).start()
 
@@ -144,7 +170,9 @@ with gr.Blocks() as demo:
                 enhance_button = gr.Button("✨ Enhance Prompt(Optional)")
 
             with gr.Column():
-                gr.Markdown("**Optional Parameters** (default values are recommended)")
+                gr.Markdown("**Optional Parameters** (default values are recommended)<br>"
+                            "Turn Inference Steps larger if you want more detailed video, but it will be slower.<br>"
+                            "50 steps are recommended for most cases. will cause 120 seconds for inference.<br>")
                 with gr.Row():
                     num_inference_steps = gr.Number(label="Inference Steps", value=50)
                     guidance_scale = gr.Number(label="Guidance Scale", value=6.0)
@@ -156,6 +184,7 @@ with gr.Blocks() as demo:
                 download_video_button = gr.File(label="📥 Download Video", visible=False)
                 download_gif_button = gr.File(label="📥 Download GIF", visible=False)
 
+
     def generate(prompt, num_inference_steps, guidance_scale, progress=gr.Progress(track_tqdm=True)):
         video_path = infer(prompt, num_inference_steps, guidance_scale, progress=progress)
         video_update = gr.update(visible=True, value=video_path)
@@ -165,8 +194,10 @@ with gr.Blocks() as demo:
 
         return video_path, video_update, gif_update
 
+
     def enhance_prompt_func(prompt):
         return convert_prompt(prompt, retry_times=1)
+
 
     generate_button.click(
         generate,
@@ -181,4 +212,4 @@ with gr.Blocks() as demo:
     )
 
 if __name__ == "__main__":
-    demo.launch(server_name="127.0.0.1", server_port=7860, share=True)
+    demo.launch(server_name="127.0.0.1", server_port=7870, share=True)
