@@ -1,9 +1,12 @@
 import os
+import threading
+import time
+
 import gradio as gr
 import torch
 from diffusers import CogVideoXPipeline
 from diffusers.utils import export_to_video
-from datetime import datetime
+from datetime import datetime, timedelta
 from openai import OpenAI
 import spaces
 import moviepy.editor as mp
@@ -94,7 +97,6 @@ def infer(
     export_to_video(video, video_path)
     return video_path
 
-
 def convert_to_gif(video_path):
     clip = mp.VideoFileClip(video_path)
     clip = clip.set_fps(8)
@@ -103,6 +105,20 @@ def convert_to_gif(video_path):
     clip.write_gif(gif_path, fps=8)
     return gif_path
 
+def delete_old_files():
+    while True:
+        now = datetime.now()
+        cutoff = now - timedelta(minutes=10)
+        output_dir = './output'
+        for filename in os.listdir(output_dir):
+            file_path = os.path.join(output_dir, filename)
+            if os.path.isfile(file_path):
+                file_mtime = datetime.fromtimestamp(os.path.getmtime(file_path))
+                if file_mtime < cutoff:
+                    os.remove(file_path)
+        time.sleep(600)  # Sleep for 10 minutes
+
+threading.Thread(target=delete_old_files, daemon=True).start()
 
 with gr.Blocks() as demo:
     gr.Markdown("""
@@ -140,7 +156,6 @@ with gr.Blocks() as demo:
                 download_video_button = gr.File(label="📥 Download Video", visible=False)
                 download_gif_button = gr.File(label="📥 Download GIF", visible=False)
 
-
     def generate(prompt, num_inference_steps, guidance_scale, progress=gr.Progress(track_tqdm=True)):
         video_path = infer(prompt, num_inference_steps, guidance_scale, progress=progress)
         video_update = gr.update(visible=True, value=video_path)
@@ -150,27 +165,8 @@ with gr.Blocks() as demo:
 
         return video_path, video_update, gif_update
 
-
     def enhance_prompt_func(prompt):
         return convert_prompt(prompt, retry_times=1)
-
-
-    generate_button.click(
-        generate,
-        inputs=[prompt, num_inference_steps, guidance_scale],
-        outputs=[video_output, download_video_button, download_gif_button]
-    )
-
-    enhance_button.click(
-        enhance_prompt_func,
-        inputs=[prompt],
-        outputs=[prompt]
-    )
-
-
-    def enhance_prompt_func(prompt):
-        return convert_prompt(prompt, retry_times=1)
-
 
     generate_button.click(
         generate,
