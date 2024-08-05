@@ -1,15 +1,16 @@
 ---
 title: CogVideoX-2B Huggingface Space
 emoji: movie
-sdk_version: 4.40.0
-suggested_storage: large
-app_port: 7860
-suggested_hardware: a10g-large
-preload_from_hub:
-  - THUDM/CogVideoX-2b
-models: THUDM/CogVideoX-2b
+colorFrom: yellow
+colorTo: green
 sdk: gradio
 python_version: 3.10
+sdk_version: 4.40.0
+suggested_hardware: a10g-large
+suggested_storage: large
+app_port: 7860
+models: 
+  - THUDM/CogVideoX-2b
 tags:
   - cogvideox
   - video-generation
