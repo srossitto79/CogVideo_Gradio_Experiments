@@ -88,7 +88,7 @@ def convert_prompt(prompt: str, retry_times: int = 3) -> str:
     return prompt
 
 
-@spaces.GPU()
+@spaces.GPU(duration=200)
 def infer(
         prompt: str,
         num_inference_steps: int,
@@ -171,8 +171,8 @@ with gr.Blocks() as demo:
 
             with gr.Column():
                 gr.Markdown("**Optional Parameters** (default values are recommended)<br>"
-                            "Turn Inference Steps larger if you want more detailed video, but it will be slower.<br>"
-                            "50 steps are recommended for most cases. will cause 120 seconds for inference.<br>")
+                            "Reduce the inference steps (such as 25) for faster generation, but this may degrade the quality of video.<br>"
+                            "50 steps are recommended for most cases. will cause 150 seconds for inference.<br>")
                 with gr.Row():
                     num_inference_steps = gr.Number(label="Inference Steps", value=50)
                     guidance_scale = gr.Number(label="Guidance Scale", value=6.0)
