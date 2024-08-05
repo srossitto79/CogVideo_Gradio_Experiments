@@ -1,6 +1,6 @@
 ---
 title: CogVideoX-2B Huggingface Space
-emoji: movie
+emoji: 🎥
 colorFrom: yellow
 colorTo: green
 sdk: gradio
@@ -17,7 +17,7 @@ tags:
   - video-generation
   - thudm
 disable_embedding: false
-----
+---
 
 # CogVideoX HF Space
 
