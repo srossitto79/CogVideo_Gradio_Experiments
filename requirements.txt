@@ -1,5 +1,6 @@
 gradio==4.40.0
-imageio-ffmpeg>=0.5.1
-torch
+imageio-ffmpeg==0.5.1
+torch==2.4.0
 diffusers
-
+spaces==0.29.2
+moviepy==1.0.3
