@@ -9,15 +9,18 @@ sdk_version: 4.40.0
 suggested_hardware: a10g-large
 suggested_storage: large
 app_port: 7860
-models: 
+app_file: app.py
+models:
   - THUDM/CogVideoX-2b
 tags:
   - cogvideox
   - video-generation
   - thudm
-pinned: true
 disable_embedding: false
 ----
+
+# CogVideoX HF Space
+
 ## How to run this space
 
 CogVideoX does not rely on any external API models.
