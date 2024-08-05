@@ -6,7 +6,7 @@ import time
 import gradio as gr
 import numpy as np
 import torch
-from diffusers import CogVideoXPipeline
+from diffusers import CogVideoXPipeline, CogVideoXDPMScheduler
 from datetime import datetime, timedelta
 from openai import OpenAI
 import spaces
@@ -18,6 +18,7 @@ import PIL
 dtype = torch.float16
 device = "cuda" if torch.cuda.is_available() else "cpu"
 pipe = CogVideoXPipeline.from_pretrained("THUDM/CogVideoX-2b", torch_dtype=dtype).to(device)
+pipe.scheduler = CogVideoXDPMScheduler.from_config(pipe.scheduler.config)
 
 sys_prompt = """You are part of a team of bots that creates videos. You work with an assistant bot that will draw anything you say in square brackets.
 
@@ -88,7 +89,7 @@ def convert_prompt(prompt: str, retry_times: int = 3) -> str:
     return prompt
 
 
-@spaces.GPU(duration=200)
+@spaces.GPU(duration=120)
 def infer(
         prompt: str,
         num_inference_steps: int,
@@ -171,10 +172,9 @@ with gr.Blocks() as demo:
 
             with gr.Column():
                 gr.Markdown("**Optional Parameters** (default values are recommended)<br>"
-                            "Reduce the inference steps (such as 25) for faster generation, but this may degrade the quality of video.<br>"
-                            "50 steps are recommended for most cases. will cause 150 seconds for inference.<br>")
+                            "24 steps are recommended for most cases for a trade-off between speed and quality<br>")
                 with gr.Row():
-                    num_inference_steps = gr.Number(label="Inference Steps", value=50)
+                    num_inference_steps = gr.Slider(label="Inference Steps", value=24, minimum=1, maximum=24)
                     guidance_scale = gr.Number(label="Guidance Scale", value=6.0)
                 generate_button = gr.Button("🎬 Generate Video")
 
