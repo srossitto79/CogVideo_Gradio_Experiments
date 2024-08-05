@@ -4,7 +4,6 @@ emoji: 🎥
 colorFrom: yellow
 colorTo: green
 sdk: gradio
-python_version: 3.10
 sdk_version: 4.40.0
 suggested_hardware: a10g-large
 suggested_storage: large
