@@ -6,7 +6,7 @@ import time
 import gradio as gr
 import numpy as np
 import torch
-from diffusers import CogVideoXPipeline, CogVideoXDPMScheduler
+from diffusers import CogVideoXPipeline
 from datetime import datetime, timedelta
 from openai import OpenAI
 import spaces
@@ -18,7 +18,6 @@ import PIL
 dtype = torch.float16
 device = "cuda" if torch.cuda.is_available() else "cpu"
 pipe = CogVideoXPipeline.from_pretrained("THUDM/CogVideoX-2b", torch_dtype=dtype).to(device)
-pipe.scheduler = CogVideoXDPMScheduler.from_config(pipe.scheduler.config)
 
 sys_prompt = """You are part of a team of bots that creates videos. You work with an assistant bot that will draw anything you say in square brackets.
 
@@ -115,12 +114,16 @@ def infer(
         negative_prompt_embeds=torch.zeros_like(prompt_embeds),
     ).frames[0]
 
+
+    return video
+
+
+def save_video(tensor):
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     video_path = f"./output/{timestamp}.mp4"
     os.makedirs(os.path.dirname(video_path), exist_ok=True)
-    export_to_video_imageio(video[1:], video_path)
+    export_to_video_imageio(tensor[1:], video_path)
     return video_path
-
 
 def convert_to_gif(video_path):
     clip = mp.VideoFileClip(video_path)
@@ -172,10 +175,10 @@ with gr.Blocks() as demo:
 
             with gr.Column():
                 gr.Markdown("**Optional Parameters** (default values are recommended)<br>"
-                            "50 steps are recommended for most cases for a trade-off between speed and quality, spend ~200 second<br>"
-                            "You can reduce the inference steps to speed up generation, but this may result in lower video quality.")
+                            "Turn Inference Steps larger if you want more detailed video, but it will be slower.<br>"
+                            "50 steps are recommended for most cases. will cause 120 seconds for inference.<br>")
                 with gr.Row():
-                    num_inference_steps = gr.Slider(label="Inference Steps", value=50, minimum=1, maximum=50)
+                    num_inference_steps = gr.Number(label="Inference Steps", value=50)
                     guidance_scale = gr.Number(label="Guidance Scale", value=6.0)
                 generate_button = gr.Button("🎬 Generate Video")
 
@@ -185,11 +188,46 @@ with gr.Blocks() as demo:
                 download_video_button = gr.File(label="📥 Download Video", visible=False)
                 download_gif_button = gr.File(label="📥 Download GIF", visible=False)
 
+    gr.Markdown("""
+        <table border="1" style="width: 100%; text-align: left; margin-top: 20px;">
+            <tr>
+                <th>Prompt</th>
+                <th>Video URL</th>
+                <th>Inference Steps</th>
+                <th>Guidance Scale</th>
+            </tr>
+            <tr>
+                <td>A detailed wooden toy ship with intricately carved masts and sails is seen gliding smoothly over a plush, blue carpet that mimics the waves of the sea. The ship's hull is painted a rich brown, with tiny windows. The carpet, soft and textured, provides a perfect backdrop, resembling an oceanic expanse. Surrounding the ship are various other toys and children's items, hinting at a playful environment. The scene captures the innocence and imagination of childhood, with the toy ship's journey symbolizing endless adventures in a whimsical, indoor setting.</td>
+                <td><a href="https://github.com/THUDM/CogVideo/raw/main/resources/videos/1.mp4">Video 1</a></td>
+                <td>50</td>
+                <td>6</td>
+            </tr>
+            <tr>
+                <td>The camera follows behind a white vintage SUV with a black roof rack as it speeds up a steep dirt road surrounded by pine trees on a steep mountain slope, dust kicks up from it’s tires, the sunlight shines on the SUV as it speeds along the dirt road, casting a warm glow over the scene. The dirt road curves gently into the distance, with no other cars or vehicles in sight. The trees on either side of the road are redwoods, with patches of greenery scattered throughout. The car is seen from the rear following the curve with ease, making it seem as if it is on a rugged drive through the rugged terrain. The dirt road itself is surrounded by steep hills and mountains, with a clear blue sky above with wispy clouds.</td>
+                <td><a href="https://github.com/THUDM/CogVideo/raw/main/resources/videos/2.mp4">Video 2</a></td>
+                <td>50</td>
+                <td>6</td>
+            </tr>
+            <tr>
+                <td>A street artist, clad in a worn-out denim jacket and a colorful bandana, stands before a vast concrete wall in the heart, holding a can of spray paint, spray-painting a colorful bird on a mottled wall.</td>
+                <td><a href="https://github.com/THUDM/CogVideo/raw/main/resources/videos/3.mp4">Video 3</a></td>
+                <td>50</td>
+                <td>6</td>
+            </tr>
+            <tr>
+                <td>In the haunting backdrop of a war-torn city, where ruins and crumbled walls tell a story of devastation, a poignant close-up frames a young girl. Her face is smudged with ash, a silent testament to the chaos around her. Her eyes glistening with a mix of sorrow and resilience, capturing the raw emotion of a world that has lost its innocence to the ravages of conflict.</td>
+                <td><a href="https://github.com/THUDM/CogVideo/raw/main/resources/videos/4.mp4">Video 4</a></td>
+                <td>50</td>
+                <td>6</td>
+            </tr>
+        </table>
+    """)
+
 
     def generate(prompt, num_inference_steps, guidance_scale, progress=gr.Progress(track_tqdm=True)):
-        video_path = infer(prompt, num_inference_steps, guidance_scale, progress=progress)
+        tensor = infer(prompt, num_inference_steps, guidance_scale, progress=progress)
+        video_path = save_video(tensor)
         video_update = gr.update(visible=True, value=video_path)
-
         gif_path = convert_to_gif(video_path)
         gif_update = gr.update(visible=True, value=gif_path)
 
