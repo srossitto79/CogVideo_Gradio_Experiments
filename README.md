@@ -1,10 +1,10 @@
 ---
-title: CogVideoX-2B Huggingface Space
+title: CogVideoX-2B
 emoji: 🎥
 colorFrom: yellow
 colorTo: green
 sdk: gradio
-sdk_version: 4.40.0
+sdk_version: 4.41.0
 suggested_hardware: a10g-large
 suggested_storage: large
 app_port: 7860
@@ -15,6 +15,7 @@ tags:
   - cogvideox
   - video-generation
   - thudm
+short_description: Text-to-Video
 disable_embedding: false
 ---
 
