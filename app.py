@@ -158,7 +158,7 @@ with gr.Blocks() as demo:
            <div style="text-align: center;">
                <a href="https://huggingface.co/THUDM/CogVideoX-2b">🤗 Model Hub</a> |
                <a href="https://github.com/THUDM/CogVideo">🌐 Github</a> |
-                <a href="https://arxiv.org/pdf/2408.06072">📜 arxiv </a>
+               <a href="https://arxiv.org/pdf/2408.06072">📜 arxiv </a>
            </div>
 
            <div style="text-align: center; font-size: 15px; font-weight: bold; color: red; margin-bottom: 20px;">
