@@ -51,3 +51,16 @@ model="glm-4-0520"  # change to GPT-4o
 ```shell
 python gradio_demo.py
 ```
+
+### using local Ollama LLM to refine prompts.
+
+```shell
+python app_ollama.py
+```
+
+Change Host and model as needed in app_ollama.py file:
+
+```python
+llm_model = "glm4:9b-chat-q8_0"
+ollama_host = "http://192.168.1.123:11434"
+```

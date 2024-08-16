@@ -2,37 +2,24 @@ import os
 import tempfile
 import threading
 import time
-
+import gc
 import gradio as gr
 import numpy as np
 import torch
-from diffusers import CogVideoXPipeline
+from diffusers import CogVideoXPipeline, CogVideoXDDIMScheduler
 from datetime import datetime, timedelta
-from ollama import OllamaClient  # Replacing openai with ollama
+import ollama
 import spaces
 import imageio
 import moviepy.editor as mp
 from typing import List, Union
 import PIL
-import bitsandbytes as bnb
+from transformers import BitsAndBytesConfig
 
 llm_model = "glm4:9b-chat-q8_0"
+ollama_host = "http://192.168.1.123:11434"
 device = "cuda" if torch.cuda.is_available() else "cpu"
 dtype = torch.float16 if device == "cuda" else torch.float32
-
-# Load the model with quantization using bitsandbytes
-bnb_config = bnb.config.Config(
-    load_in_8bit=True,
-    # load_in_4bit=True,
-)
-
-# Load the model with quantization
-pipe = CogVideoXPipeline.from_pretrained(
-    "THUDM/CogVideoX-2b",
-    torch_dtype=dtype,
-    device_map="auto",
-    quantization_config=bnb_config,
-).to(device)
 
 sys_prompt = """You are part of a team of bots that creates videos. You work with an assistant bot that will draw anything you say in square brackets.
 
@@ -55,23 +42,82 @@ def export_to_video_imageio(
     """
     if output_video_path is None:
         output_video_path = tempfile.NamedTemporaryFile(suffix=".mp4").name
-
     if isinstance(video_frames[0], PIL.Image.Image):
         video_frames = [np.array(frame) for frame in video_frames]
-
     with imageio.get_writer(output_video_path, fps=fps) as writer:
         for frame in video_frames:
             writer.append_data(frame)
-
     return output_video_path
 
 
+@spaces.GPU(duration=240)
+def generate_video(
+        prompt: str,
+        output_path: str = "./output.mp4",
+        num_inference_steps: int = 50,
+        guidance_scale: float = 6.0,
+        num_videos_per_prompt: int = 1,
+        dtype: torch.dtype = torch.float16,
+        progress=gr.Progress(track_tqdm=True)
+):
+    """
+    Generates a video based on the given prompt and saves it to the specified path.
+
+    Parameters:
+    - prompt (str): The description of the video to be generated.
+    - output_path (str): The path where the generated video will be saved.
+    - num_inference_steps (int): Number of steps for the inference process. More steps can result in better quality.
+    - guidance_scale (float): The scale for classifier-free guidance. Higher values can lead to better alignment with the prompt.
+    - num_videos_per_prompt (int): Number of videos to generate per prompt.
+    - dtype (torch.dtype): The data type for computation (default is torch.float16).
+
+    """
+
+    # 1.  Load the pre-trained CogVideoX pipeline with the specified precision (float16).
+    # add device_map="balanced" in the from_pretrained function and remove the enable_model_cpu_offload()
+    # function to use Multi GPUs.
+    pipe = CogVideoXPipeline.from_pretrained(
+        "THUDM/CogVideoX-2b",
+        torch_dtype=dtype
+    ).to(device)
+
+    # 2. Set Scheduler.
+    # Can be changed to `CogVideoXDPMScheduler` or `CogVideoXDDIMScheduler`.
+    # We recommend using `CogVideoXDDIMScheduler` for better results.
+    pipe.scheduler = CogVideoXDDIMScheduler.from_config(pipe.scheduler.config, timestep_spacing="trailing")
+
+    # 3. Enable CPU offload for the model and reset the memory, enable tiling.
+    pipe.enable_model_cpu_offload()
+
+    gc.collect()
+    torch.cuda.empty_cache()
+    torch.cuda.reset_accumulated_memory_stats()
+    torch.cuda.reset_peak_memory_stats()
+
+    # Using with diffusers branch `main` to enable tiling. This will cost ONLY 12GB GPU memory.
+    # pipe.vae.enable_tiling()
+
+    # 4. Generate the video frames based on the prompt.
+    # `num_frames` is the Number of frames to generate.
+    # This is the default value for 6 seconds video and 8 fps,so 48 frames and will plus 1 frame for the first frame.
+    # for diffusers version `0.30.0`, this should be 48. and for `0.31.0` and after, this should be 49.
+    video = pipe(
+        prompt=prompt,
+        num_videos_per_prompt=num_videos_per_prompt,  # Number of videos to generate per prompt
+        num_inference_steps=num_inference_steps,  # Number of inference steps
+        num_frames=48, # Number of frames to generate，changed to 49 for diffusers version `0.31.0` and after.
+        guidance_scale=guidance_scale,  # Guidance scale for classifier-free guidance
+        generator=torch.Generator().manual_seed(42),  # Set the seed for reproducibility
+    ).frames[0]
+
+    # 5. Export the generated frames to a video file. fps must be 8
+    export_to_video_imageio(video, output_path, fps=8)
+
 def convert_prompt(prompt: str, retry_times: int = 3) -> str:
-    client = OllamaClient()  # Initialize OllamaClient
     text = prompt.strip()
 
     for i in range(retry_times):
-        response = client.chat(
+        response = ollama.Client(host=ollama_host).chat(
             messages=[
                 {"role": "system", "content": sys_prompt},
                 {"role": "user",
@@ -89,53 +135,13 @@ def convert_prompt(prompt: str, retry_times: int = 3) -> str:
                 {"role": "user",
                  "content": f'Create an imaginative video descriptive caption or modify an earlier caption in ENGLISH for the user input: "{text}"'},
             ],
-            model=llm_model,
-            temperature=0.01,
-            top_p=0.7,
-            max_tokens=250,
+            model=llm_model
         )
         
         if "message" in response:
             return response["message"]["content"]
         
     return prompt
-
-
-@spaces.GPU(duration=240)
-def infer(
-        prompt: str,
-        num_inference_steps: int,
-        guidance_scale: float,
-        progress=gr.Progress(track_tqdm=True)
-):
-    torch.cuda.empty_cache()
-
-    prompt_embeds, _ = pipe.encode_prompt(
-        prompt=prompt,
-        negative_prompt=None,
-        do_classifier_free_guidance=True,
-        num_videos_per_prompt=1,
-        max_sequence_length=226,
-        device=device,
-        dtype=dtype,
-    )
-
-    video = pipe(
-        num_inference_steps=num_inference_steps,
-        guidance_scale=guidance_scale,
-        prompt_embeds=prompt_embeds,
-        negative_prompt_embeds=torch.zeros_like(prompt_embeds),
-    ).frames[0]
-
-    return video
-
-
-def save_video(tensor):
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    video_path = f"./output/{timestamp}.mp4"
-    os.makedirs(os.path.dirname(video_path), exist_ok=True)
-    export_to_video_imageio(tensor[1:], video_path)
-    return video_path
 
 def convert_to_gif(video_path):
     clip = mp.VideoFileClip(video_path)
@@ -146,21 +152,36 @@ def convert_to_gif(video_path):
     return gif_path
 
 
-def delete_old_files():
-    while True:
-        now = datetime.now()
-        cutoff = now - timedelta(minutes=10)
-        output_dir = './output'
-        for filename in os.listdir(output_dir):
-            file_path = os.path.join(output_dir, filename)
-            if os.path.isfile(file_path):
-                file_mtime = datetime.fromtimestamp(os.path.getmtime(file_path))
-                if file_mtime < cutoff:
-                    os.remove(file_path)
-        time.sleep(600)  # Sleep for 10 minutes
+# def delete_old_files():
+#     while True:
+#         now = datetime.now()
+#         cutoff = now - timedelta(minutes=10)
+#         output_dir = './output'
+#         for filename in os.listdir(output_dir):
+#             file_path = os.path.join(output_dir, filename)
+#             if os.path.isfile(file_path):
+#                 file_mtime = datetime.fromtimestamp(os.path.getmtime(file_path))
+#                 if file_mtime < cutoff:
+#                     os.remove(file_path)
+#         time.sleep(600)  # Sleep for 10 minutes
+
+#threading.Thread(target=delete_old_files, daemon=True).start()
+
+def generate_and_process_video(enhanced_prompt, num_inference_steps, guidance_scale, progress=gr.Progress(track_tqdm=True)):
+    # Run the inference to generate the video
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    video_path = f"./output/{timestamp}.mp4"
+    generate_video(prompt=enhanced_prompt, num_inference_steps=num_inference_steps, guidance_scale=guidance_scale,output_path=video_path, progress=progress)
+    
+    video_update = gr.update(visible=True, value=video_path)
+    # Convert the video to GIF
+    gif_path = convert_to_gif(video_path)
+    
+    gif_update = gr.update(visible=True, value=gif_path)
+    
+    return video_path, gif_path, video_update, gif_update
 
 
-threading.Thread(target=delete_old_files, daemon=True).start()
 
 with gr.Blocks() as demo:
     gr.Markdown("""
@@ -171,11 +192,6 @@ with gr.Blocks() as demo:
                <a href="https://huggingface.co/THUDM/CogVideoX-2b">🤗 Model Hub</a> |
                <a href="https://github.com/THUDM/CogVideo">🌐 Github</a> 
            </div>
-
-           <div style="text-align: center; font-size: 15px; font-weight: bold; color: red; margin-bottom: 20px;">
-            ⚠️ This demo is for academic research and experiential use only. 
-            Users should strictly adhere to local laws and ethics.
-            </div>
            """)
     with gr.Row():
         with gr.Column():
@@ -188,16 +204,17 @@ with gr.Blocks() as demo:
             enhance_prompt_button.click(fn=convert_prompt, inputs=prompt, outputs=enhanced_prompt)
 
             num_inference_steps = gr.Slider(0, 150, value=50, label="Inference Steps", step=1)
-            guidance_scale = gr.Slider(0, 50, value=15, label="Guidance Scale", step=1)
+            guidance_scale = gr.Slider(0, 50, value=6, label="Guidance Scale", step=1)
 
             submit_button = gr.Button("Generate Video")
+            with gr.Row():
+                download_video_button = gr.File(label="📥 Download Video", visible=False)
+                download_gif_button = gr.File(label="📥 Download GIF", visible=False)
         with gr.Column():
             result = gr.Video(label="Generated Video", format="mp4")
             gif_result = gr.Image(label="GIF Preview")
-
-    submit_button.click(fn=infer, inputs=[enhanced_prompt, num_inference_steps, guidance_scale], outputs=[result])
-    submit_button.click(fn=save_video, inputs=[result], outputs=[])
-    submit_button.click(fn=convert_to_gif, inputs=[result], outputs=[gif_result])
+    
+    submit_button.click(fn=generate_and_process_video, inputs=[enhanced_prompt, num_inference_steps, guidance_scale], outputs=[result, gif_result, download_video_button, download_gif_button])
 
 demo.queue()
 demo.launch()
