@@ -186,11 +186,12 @@ def generate_and_process_video(enhanced_prompt, num_inference_steps, guidance_sc
 with gr.Blocks() as demo:
     gr.Markdown("""
            <div style="text-align: center; font-size: 32px; font-weight: bold; margin-bottom: 20px;">
-               CogVideoX-2B Huggingface Space🤗
+               CogVideoX-2B with Ollama LLM, Gradio Demo
            </div>
            <div style="text-align: center;">
-               <a href="https://huggingface.co/THUDM/CogVideoX-2b">🤗 Model Hub</a> |
-               <a href="https://github.com/THUDM/CogVideo">🌐 Github</a> 
+               <a href="https://huggingface.co/THUDM/CogVideoX-2b">🤗 Original Version Model Hub</a> |
+               <a href="https://github.com/THUDM/CogVideo">🌐 Original Version Github</a> |
+               <a href="https://github.com/srossitto79/CogVideo_Gradio_Experiments">🌐 This Version Github</a> 
            </div>
            """)
     with gr.Row():
